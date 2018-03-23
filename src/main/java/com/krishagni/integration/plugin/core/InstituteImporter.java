@@ -24,19 +24,24 @@ public class InstituteImporter {
 		
 		Record record = new Record();
 		
+		InstituteDetail detail = new InstituteDetail();
+		
 		CsvFileReader csvReader = null;
-		csvReader = csvReader.createCsvFileReader("TestInstituteCSV", true);
+		csvReader = csvReader.createCsvFileReader("/home/krishagni/Desktop/TestInstituteCsv.csv", true);
 		String[] ColumnNames = csvReader.getColumnNames();
 		
 		instituteMetadata = populateMetadata(instituteMetadata);
-		record = getRecordObject(ColumnNames,csvReader.getRow(),record);
-		
 		Transformer transformer = new DefaultTransformer(instituteMetadata);
-		InstituteDetail detail = transformer.transform(record, InstituteDetail.class);
-
-		RequestEvent<InstituteDetail> req = new RequestEvent<InstituteDetail>(detail);
-		ResponseEvent<InstituteDetail> resp = instituteSvc.createInstitute(req);
-		resp.throwErrorIfUnsuccessful();
+		
+		while(csvReader.next()) {
+			record = getRecordObject(ColumnNames,csvReader.getRow(),record);
+			
+			detail = transformer.transform(record, InstituteDetail.class);
+			
+			RequestEvent<InstituteDetail> req = new RequestEvent<InstituteDetail>(detail);
+			ResponseEvent<InstituteDetail> resp = instituteSvc.createInstitute(req);
+			resp.throwErrorIfUnsuccessful();
+		}
 		//
 		//Testing Output
 		//
@@ -45,7 +50,6 @@ public class InstituteImporter {
 	}
 	
 	private Record getRecordObject(String[] columnNames, String[] row, Record record) {
-		
 		for(int i=0;i<row.length;i++) {
 			record.add(columnNames[i], row[i]);
 		}
