@@ -6,10 +6,14 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.krishagni.catissueplus.core.common.errors.OpenSpecimenException;
+import com.krishagni.catissueplus.core.common.util.ConfigUtil;
+import com.krishagni.catissueplus.core.importer.domain.ImportJobErrorCode;
 import com.krishagni.integration.plugin.core.InstituteImporter;
 import com.krishagni.integration.plugin.core.Metadata;
 import com.krishagni.integration.plugin.core.Record;
@@ -42,7 +46,7 @@ public class DefaultTransformer implements Transformer {
 //				rowData.remove(columnMetadata.getColumn());
 			} else {
 				logger.error("Error: A field present in Metadata doesn't occur in Record.");
-				break;			
+				break;
 				}
 		}
 
@@ -53,19 +57,20 @@ public class DefaultTransformer implements Transformer {
 
 	private Date parseToDate(Object value, String format) {
 		Date date = null;
-		
 		try {
-			SimpleDateFormat simpleDateFormat = new SimpleDateFormat(format);//if format not specified use locale in OS
+			if(StringUtils.isBlank(format)) {
+				format = ConfigUtil.getInstance().getDateFmt();
+			}
+			SimpleDateFormat simpleDateFormat = new SimpleDateFormat(format);
 			date = simpleDateFormat.parse(value.toString());
 			
 			return date;
 		} catch (ParseException e) {
-			logger.error("Parse Exception");
+			throw OpenSpecimenException.userError(ImportJobErrorCode.RECORD_PARSE_ERROR);
 		}
 		
-		return date;
 	}
-
+	
 }
 
 
