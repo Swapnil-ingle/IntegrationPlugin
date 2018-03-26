@@ -22,9 +22,9 @@ import com.krishagni.integration.plugin.transformer.Transformer;
 
 
 public class DefaultTransformer implements Transformer {
-	private Metadata metadata;
-	
 	final static Log logger = LogFactory.getLog(InstituteImporter.class);
+	
+	private Metadata metadata;
 	
 	private ObjectMapper objMapper = new ObjectMapper();
 	
@@ -32,42 +32,41 @@ public class DefaultTransformer implements Transformer {
 		this.metadata = metaData;
 	}
 
-	public <T> T transform(Record record, Class<T> objectType){
+	public <T> T transform(Record record, Class<T> objectType) {
 		Map<String, Object> attrValueMap = new HashMap<>();
 		
-		for (Field columnMetadata : metadata.getFields()) {
-			if (record.getValue(columnMetadata.getColumn()) != null) {
+		try {
+			for (Field columnMetadata : metadata.getFields()) {
+				if (record.getValue(columnMetadata.getColumn()) == null) {
+					logger.error("Error: A field present in Metadata doesn't occur in Record.");
+					break;
+				}
+				
 				if (columnMetadata.getType().equals("datetime")) {
-					Date date = parseToDate(record.getValue(columnMetadata.getColumn()),columnMetadata.getFormat());
+					Date date = parseToDate(record.getValue(columnMetadata.getColumn()), columnMetadata.getFormat());
 					attrValueMap.put(columnMetadata.getAttribute(),date);
 				} else {
 					attrValueMap.put(columnMetadata.getAttribute(), record.getValue(columnMetadata.getColumn()));
 				}
-//				rowData.remove(columnMetadata.getColumn());
-			} else {
-				logger.error("Error: A field present in Metadata doesn't occur in Record.");
-				break;
-				}
+	
+			} 
+		} catch (ParseException e) {
+			logger.error("Error while parsing record");
+			throw OpenSpecimenException.userError(ImportJobErrorCode.RECORD_PARSE_ERROR, e.getLocalizedMessage());
 		}
-
-//		assert(rowData.isEmpty()):"Error: A field is present in record that doesn't have mapping in Metadata.";
-		
+			
 		return objMapper.convertValue(attrValueMap, objectType);
 	}
 
-	private Date parseToDate(Object value, String format) {
+	private Date parseToDate(Object value, String dateFmt) throws ParseException {
 		Date date = null;
-		try {
-			if(StringUtils.isBlank(format)) {
-				format = ConfigUtil.getInstance().getDateFmt();
-			}
-			SimpleDateFormat simpleDateFormat = new SimpleDateFormat(format);
-			date = simpleDateFormat.parse(value.toString());
-			
-			return date;
-		} catch (ParseException e) {
-			throw OpenSpecimenException.userError(ImportJobErrorCode.RECORD_PARSE_ERROR);
+		if (StringUtils.isBlank(dateFmt)) {
+			dateFmt = ConfigUtil.getInstance().getDateFmt();
 		}
+		SimpleDateFormat simpleDateFormat = new SimpleDateFormat(dateFmt);
+		date = simpleDateFormat.parse(value.toString());
+					
+		return date;
 		
 	}
 	

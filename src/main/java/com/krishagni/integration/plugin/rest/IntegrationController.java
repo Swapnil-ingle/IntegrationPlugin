@@ -16,6 +16,6 @@ public class IntegrationController {
 	
 	@RequestMapping(method = RequestMethod.GET)
 	public void importerMain() {
-		instituteImporter.importerMain();
+		instituteImporter.importObjects();
 	}
 }

@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.krishagni.catissueplus.core.administrative.events.InstituteDetail;
 import com.krishagni.catissueplus.core.administrative.services.InstituteService;
 import com.krishagni.catissueplus.core.common.events.RequestEvent;
-import com.krishagni.catissueplus.core.common.events.ResponseEvent;
 import com.krishagni.catissueplus.core.common.util.CsvFileReader;
 import com.krishagni.integration.plugin.core.Metadata.Field;
 import com.krishagni.integration.plugin.transformer.Transformer;
@@ -19,45 +18,30 @@ public class InstituteImporter {
 	
 	final static Log logger = LogFactory.getLog(InstituteImporter.class);
 	
-	public void importerMain () {
-		Metadata instituteMetadata = new Metadata();
-		
-		Record record = new Record();
-		
-		InstituteDetail detail = new InstituteDetail();
-		
-		CsvFileReader csvReader = null;
-		csvReader = csvReader.createCsvFileReader("/home/krishagni/Desktop/TestInstituteCsv.csv", true);
-		String[] ColumnNames = csvReader.getColumnNames();
-		
-		instituteMetadata = populateMetadata(instituteMetadata);
+	public void importObjects () {
+		Metadata instituteMetadata = getMetadata();
 		Transformer transformer = new DefaultTransformer(instituteMetadata);
 		
-		while(csvReader.next()) {
-			record = getRecordObject(ColumnNames,csvReader.getRow(),record);
-			
-			detail = transformer.transform(record, InstituteDetail.class);
-			
-			RequestEvent<InstituteDetail> req = new RequestEvent<InstituteDetail>(detail);
-			ResponseEvent<InstituteDetail> resp = instituteSvc.createInstitute(req);
-			resp.throwErrorIfUnsuccessful();
+		CsvFileReader csvReader = CsvFileReader.createCsvFileReader("/home/krishagni/Desktop/TestInstituteCsv.csv", true);
+		String[] columnNames = csvReader.getColumnNames();		
+		while (csvReader.next()) {
+			Record record = getRecord(columnNames, csvReader.getRow());
+			InstituteDetail detail = transformer.transform(record, InstituteDetail.class);
+			instituteSvc.createInstitute(new RequestEvent<InstituteDetail>(detail));
 		}
-		//
-		//Testing Output
-		//
-		logger.info(detail.getId());
-		logger.info(detail.getName());
 	}
 	
-	private Record getRecordObject(String[] columnNames, String[] row, Record record) {
-		for(int i=0;i<row.length;i++) {
-			record.add(columnNames[i], row[i]);
+	private Record getRecord(String[] columnNames, String[] row) {
+		Record record = new Record();
+		for (int i = 0; i <row.length; i++) {
+			record.addValue(columnNames[i], row[i]);
 		}
 		
 		return record;
 	}
 
-	private Metadata populateMetadata(Metadata metadata) {
+	private Metadata getMetadata() {
+		Metadata metadata = new Metadata();
 		Field idMetadata = metadata.new Field();
 		idMetadata.setAttribute("id");
 		idMetadata.setColumn("Identifier");
