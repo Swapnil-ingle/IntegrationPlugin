@@ -16,7 +16,7 @@ public class InstituteImporter {
 	@Autowired
 	InstituteService instituteSvc;
 	
-	final static Log logger = LogFactory.getLog(InstituteImporter.class);
+	//private final static Log logger = LogFactory.getLog(InstituteImporter.class);
 	
 	public void importObjects () {
 		Metadata instituteMetadata = getMetadata();
@@ -42,13 +42,13 @@ public class InstituteImporter {
 
 	private Metadata getMetadata() {
 		Metadata metadata = new Metadata();
-		Field idMetadata = metadata.new Field();
+		Field idMetadata = new Field();
 		idMetadata.setAttribute("id");
 		idMetadata.setColumn("Identifier");
 		idMetadata.setType("Long");
 		metadata.addField(idMetadata);
 		
-		Field nameMetadata = metadata.new Field();
+		Field nameMetadata = new Field();
 		nameMetadata.setAttribute("name");
 		nameMetadata.setColumn("Institute Name");
 		nameMetadata.setType("String");

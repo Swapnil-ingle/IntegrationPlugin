@@ -14,7 +14,7 @@ public class Metadata {
 		return fields;
 	}
 	
-	public class Field {
+	public static class Field {
 		private String attribute;
 		
 		private String column;

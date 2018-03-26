@@ -22,7 +22,7 @@ import com.krishagni.integration.plugin.transformer.Transformer;
 
 
 public class DefaultTransformer implements Transformer {
-	final static Log logger = LogFactory.getLog(InstituteImporter.class);
+	private final static Log logger = LogFactory.getLog(InstituteImporter.class);
 	
 	private Metadata metadata;
 	
@@ -37,16 +37,23 @@ public class DefaultTransformer implements Transformer {
 		
 		try {
 			for (Field columnMetadata : metadata.getFields()) {
-				if (record.getValue(columnMetadata.getColumn()) == null) {
+				Object columnValue = record.getValue(columnMetadata.getColumn());
+				String columnType = columnMetadata.getType();
+				String columnAttribute = columnMetadata.getAttribute();
+				
+				if (columnValue == null) {
 					logger.error("Error: A field present in Metadata doesn't occur in Record.");
-					break;
+					continue;
 				}
 				
-				if (columnMetadata.getType().equals("datetime")) {
-					Date date = parseToDate(record.getValue(columnMetadata.getColumn()), columnMetadata.getFormat());
-					attrValueMap.put(columnMetadata.getAttribute(),date);
+				if (columnType.equals("date")) {
+					Date date = parseToDate(columnValue, columnMetadata.getFormat());
+					attrValueMap.put(columnAttribute,date);
+				} else if (columnType.equals("datetime")) {
+					Date date = parseToDatetime(columnValue, columnMetadata.getFormat());
+					attrValueMap.put(columnAttribute,date);
 				} else {
-					attrValueMap.put(columnMetadata.getAttribute(), record.getValue(columnMetadata.getColumn()));
+					attrValueMap.put(columnAttribute, columnValue);
 				}
 	
 			} 
@@ -54,22 +61,28 @@ public class DefaultTransformer implements Transformer {
 			logger.error("Error while parsing record");
 			throw OpenSpecimenException.userError(ImportJobErrorCode.RECORD_PARSE_ERROR, e.getLocalizedMessage());
 		}
-			
+		
 		return objMapper.convertValue(attrValueMap, objectType);
 	}
 
 	private Date parseToDate(Object value, String dateFmt) throws ParseException {
-		Date date = null;
 		if (StringUtils.isBlank(dateFmt)) {
 			dateFmt = ConfigUtil.getInstance().getDateFmt();
-		}
+		} 
+		
 		SimpleDateFormat simpleDateFormat = new SimpleDateFormat(dateFmt);
-		date = simpleDateFormat.parse(value.toString());
+		Date date = simpleDateFormat.parse(value.toString());
 					
 		return date;
-		
 	}
 	
+	private Date parseToDatetime(Object value, String dateFmt) throws ParseException {
+		if(StringUtils.isBlank(dateFmt)) {
+			dateFmt = ConfigUtil.getInstance().getDateTimeFmt();
+		}
+		
+		return parseToDate(value, dateFmt);
+	}
 }
 
 
