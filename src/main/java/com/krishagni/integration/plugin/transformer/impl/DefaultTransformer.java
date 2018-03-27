@@ -2,8 +2,10 @@ package com.krishagni.integration.plugin.transformer.impl;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
@@ -37,7 +39,7 @@ public class DefaultTransformer implements Transformer {
 		
 		try {
 			for (Field columnMetadata : metadata.getFields()) {
-				Object columnValue = record.getValue(columnMetadata.getColumn());
+				Object columnValue = getColumnValue(columnMetadata,record);
 				String columnType = columnMetadata.getType();
 				String columnAttribute = columnMetadata.getAttribute();
 				
@@ -55,7 +57,7 @@ public class DefaultTransformer implements Transformer {
 				} else {
 					attrValueMap.put(columnAttribute, columnValue);
 				}
-	
+				
 			} 
 		} catch (ParseException e) {
 			logger.error("Error while parsing record");
@@ -63,6 +65,33 @@ public class DefaultTransformer implements Transformer {
 		}
 		
 		return objMapper.convertValue(attrValueMap, objectType);
+	}
+
+	private Object getColumnValue(Field columnMetadata, Record record) {
+		Object columnValue = null;
+		
+		if (columnMetadata.isMultiple()) {
+			columnValue = getMultiValueList(record,columnMetadata.getColumn(),1);
+		} else {
+			columnValue = record.getValue(columnMetadata.getColumn());
+		}
+		
+		return columnValue;
+	}
+
+	private List<String> getMultiValueList(Record record, String columnName, int prefix) {
+		List<String> multiValueList = new ArrayList<>();
+		
+		while (true) {
+			if (StringUtils.isNotBlank((String)record.getValue(columnName+"#"+prefix))) {
+				multiValueList.add(record.getValue(columnName+"#"+prefix).toString());
+				prefix++;
+			} else {
+				break;
+			}
+		}
+		
+		return multiValueList;
 	}
 
 	private Date parseToDate(Object value, String dateFmt) throws ParseException {

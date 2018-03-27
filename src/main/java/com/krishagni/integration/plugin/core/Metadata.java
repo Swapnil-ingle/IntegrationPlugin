@@ -21,6 +21,8 @@ public class Metadata {
 		
 		private String type;
 		
+		private Boolean multiple;
+		
 		private String format;
 		
 		private List<Field> fields;
@@ -63,6 +65,14 @@ public class Metadata {
 
 		public void setFormat(String format) {
 			this.format = format;
+		}
+
+		public Boolean isMultiple() {
+			return multiple;
+		}
+
+		public void setMultiple(Boolean multiple) {
+			this.multiple = multiple;
 		}
 	}
 }
