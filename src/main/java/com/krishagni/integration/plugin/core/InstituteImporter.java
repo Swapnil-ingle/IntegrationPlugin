@@ -5,8 +5,9 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.krishagni.catissueplus.core.administrative.services.InstituteService;
-import com.krishagni.catissueplus.core.common.util.CsvFileReader;
 import com.krishagni.integration.plugin.core.Metadata.Field;
+import com.krishagni.integration.plugin.datasource.DataSource;
+import com.krishagni.integration.plugin.datasource.impl.CsvFileDataSource;
 import com.krishagni.integration.plugin.transformer.Transformer;
 import com.krishagni.integration.plugin.transformer.impl.DefaultTransformer;
 
@@ -14,36 +15,37 @@ public class InstituteImporter {
 	@Autowired
 	InstituteService instituteSvc;
 	
+	private DataSource ds;
+	
 	private final static Log logger = LogFactory.getLog(InstituteImporter.class);
 	
 	public void importObjects () {
-		Metadata instituteMetadata = getMetadata();
-		Transformer transformer = new DefaultTransformer(instituteMetadata);
-		InstituteDetail detail = null;
+		try {
+			Metadata instituteMetadata = getMetadata();
+			Transformer transformer = new DefaultTransformer(instituteMetadata);
+			//InstituteDetail detail = null;
+			
+			ds = new CsvFileDataSource("/home/krishagni/Desktop/TestInstituteCsv.csv");
 		
-		CsvFileReader csvReader = CsvFileReader.createCsvFileReader("/home/krishagni/Desktop/TestInstituteCsv.csv", true);
-		String[] columnNames = csvReader.getColumnNames();		
-		while (csvReader.next()) {
-			Record record = getRecord(columnNames, csvReader.getRow());
-			detail = transformer.transform(record, InstituteDetail.class);
-			//instituteSvc.createInstitute(new RequestEvent<InstituteDetail>(detail));
-			logger.info(detail.getId());
-			logger.info(detail.getName());
-			logger.info(detail.getDate());
-			logger.info(detail.getCityNames());
+			while (ds.hasNext()) {
+				Record record = ds.nextRecord();
+				InstituteDetail detail = transformer.transform(record, InstituteDetail.class);
+				//instituteSvc.createInstitute(new RequestEvent<InstituteDetail>(detail));
+				logger.info(detail.getId());
+				logger.info(detail.getName());
+				logger.info(detail.getDate());
+				logger.info(detail.getCityNames());
+			}
+		} catch(Exception e) {
+			logger.error("Error while processing.");
+		} finally {
+			if (ds != null) {
+				ds.close();
+			}
 		}
 		
 	}
 	
-	private Record getRecord(String[] columnNames, String[] row) {
-		Record record = new Record();
-		for (int i = 0; i <row.length; i++) {
-			record.addValue(columnNames[i], row[i]);
-		}
-		
-		return record;
-	}
-
 	private Metadata getMetadata() {
 		Metadata metadata = new Metadata();
 		Field idMetadata = new Field();
