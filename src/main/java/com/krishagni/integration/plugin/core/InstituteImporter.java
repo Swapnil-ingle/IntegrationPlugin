@@ -1,9 +1,7 @@
 package com.krishagni.integration.plugin.core;
 
-import java.io.FileInputStream;
-import java.io.InputStream;
+import java.io.File;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.krishagni.catissueplus.core.administrative.services.InstituteService;
 import com.krishagni.integration.plugin.datasource.DataSource;
-import com.krishagni.integration.plugin.datasource.impl.CsvFileDataSource;
+import com.krishagni.integration.plugin.datasource.DataSourceRegistrar;
 import com.krishagni.integration.plugin.transformer.Transformer;
 import com.krishagni.integration.plugin.transformer.impl.DefaultTransformer;
 
@@ -28,16 +26,16 @@ public class InstituteImporter {
 			Metadata instituteMetadata = getMetadata();
 			Transformer transformer = new DefaultTransformer(instituteMetadata);
 			
-			ds = new CsvFileDataSource("/home/krishagni/Desktop/TestInstituteCsv.csv");
-		
+			ds = DataSourceRegistrar.getDataSource(instituteMetadata.getDataSource());
+			
 			while (ds.hasNext()) {
 				Record record = ds.nextRecord();
 				InstituteDetail detail = transformer.transform(record, InstituteDetail.class);
 				//instituteSvc.createInstitute(new RequestEvent<InstituteDetail>(detail));
-				logger.info("Id : "+detail.getId());
-				logger.info("Name : "+detail.getName());
-				logger.info("Date : "+detail.getDate());
-				logger.info("City Names : "+detail.getCityNames()+"\n");
+				logger.info("Id :" + detail.getId());
+				logger.info("Name : " + detail.getName());
+				logger.info("Date : " + detail.getDate());
+				logger.info("City Names : " + detail.getCityNames() + "\n");
 			}
 		} catch(Exception e) {
 			logger.error("Error while processing.");
@@ -52,41 +50,8 @@ public class InstituteImporter {
 	private Metadata getMetadata() throws Exception{
 		ObjectMapper objMapper = new ObjectMapper();
 		
-		InputStream is = new FileInputStream("/home/krishagni/Documents/Metadata.json");
-		String Json = IOUtils.toString(is);
+		File Json = new File("/home/krishagni/Documents/Metadata.json");
 		
-		/*String Json = "{"
-				+ 	"\"fields\" : ["
-				+ 				"{"
-				+ 					"\"attribute\" : \"id\", "
-				+ 					"\"column\" : \"Identifier\", "
-				+ 					"\"type\" : \"Long\", "
-				+ 					"\"multiple\" : \"false\""
-				+ 				"},"
-				+  				"{"
-				+ 					"\"attribute\" : \"name\", "
-				+ 					"\"column\" : \"Institute Name\", "
-				+ 					"\"type\" : \"String\", "
-				+ 					"\"multiple\" : \"false\""
-				+ 				"},"
-				+				"{"
-				+ 					"\"attribute\" : \"date\", "
-				+ 					"\"column\" : \"Date\", "
-				+ 					"\"type\" : \"datetime\", "
-				+ 					"\"multiple\" : \"false\","
-				+					"\"format\" : \"dd/MM/yyyy HH:mm:ss\""
-				+ 				"},"
-				+				"{"
-				+ 					"\"attribute\" : \"cityNames\", "
-				+ 					"\"column\" : \"City\", "
-				+ 					"\"type\" : \"String\", "
-				+ 					"\"multiple\" : \"true\""
-				+ 				"}"
-				+ 		"]"
-				+ "}";*/
-		
-		Metadata metadata = objMapper.readValue(Json, Metadata.class);
-		
-		return metadata;
+		return objMapper.readValue(Json, Metadata.class);
 	}
 }

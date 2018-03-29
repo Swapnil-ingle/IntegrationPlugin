@@ -7,16 +7,13 @@ import com.krishagni.integration.plugin.datasource.DataSource;
 public class CsvFileDataSource implements DataSource {
 	private CsvFileReader csvReader;
 	
-	private String[] columnNames;
-	
 	public CsvFileDataSource(String filename) {
 		this.csvReader = CsvFileReader.createCsvFileReader(filename, true);
-		this.columnNames = csvReader.getColumnNames();
 	}
 	
 	@Override
 	public Record nextRecord() {
-		return getRecord(columnNames, csvReader.getRow());
+		return getRecord(csvReader.getColumnNames(), csvReader.getRow());
 	}
 	
 	private Record getRecord(String[] columnNames, String[] row) {

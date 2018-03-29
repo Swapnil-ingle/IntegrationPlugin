@@ -1,10 +1,14 @@
 package com.krishagni.integration.plugin.core;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Metadata {
 	List <Field> fields = new ArrayList<Field>();
+	
+	private DataSource dataSource;
 	
 	public void addField(Field field) {
 		fields.add(field);
@@ -12,6 +16,36 @@ public class Metadata {
 	
 	public List<Field> getFields() {
 		return fields;
+	}
+	
+	public DataSource getDataSource() {
+		return dataSource;
+	}
+
+	public void setDataSource(DataSource dataSource) {
+		this.dataSource = dataSource;
+	}
+
+	public static class DataSource {
+		private String type;
+		
+		private Map<String, String> opts = new HashMap<>();
+		
+		public String getType() {
+			return type;
+		}
+
+		public void setType(String type) {
+			this.type = type;
+		}
+
+		public Map<String, String> getOpts() {
+			return opts;
+		}
+
+		public void setOpts(Map<String, String> opts) {
+			this.opts = opts;
+		}
 	}
 	
 	public static class Field {

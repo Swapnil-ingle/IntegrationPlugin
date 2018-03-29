@@ -39,25 +39,14 @@ public class DefaultTransformer implements Transformer {
 		
 		try {
 			for (Field columnMetadata : metadata.getFields()) {
-				Object columnValue = getColumnValue(columnMetadata,record);
-				String columnType = columnMetadata.getType();
-				String columnAttribute = columnMetadata.getAttribute();
+				Object value = getValue(record, columnMetadata);
 				
-				if (columnValue == null) {
+				if (value != null) {
+					attrValueMap.put(columnMetadata.getAttribute(), value);
+				} else {
 					logger.error("Error: A field present in Metadata doesn't occur in Record.");
 					continue;
 				}
-				
-				if (columnType.equals("date")) {
-					Date date = parseToDate(columnValue, columnMetadata.getFormat());
-					attrValueMap.put(columnAttribute,date);
-				} else if (columnType.equals("datetime")) {
-					Date date = parseToDatetime(columnValue, columnMetadata.getFormat());
-					attrValueMap.put(columnAttribute,date);
-				} else {
-					attrValueMap.put(columnAttribute, columnValue);
-				}
-				
 			} 
 		} catch (ParseException e) {
 			logger.error("Error while parsing record");
@@ -67,11 +56,43 @@ public class DefaultTransformer implements Transformer {
 		return objMapper.convertValue(attrValueMap, objectType);
 	}
 
-	private Object getColumnValue(Field columnMetadata, Record record) {
+	private Object getValue(Record record, Field columnMetadata) throws ParseException{
+		Object columnValue = getColumnValue(record, columnMetadata);
+		String columnType = columnMetadata.getType();
+		
+		if (columnValue == null) {
+			return null;
+		}
+		
+		if (columnType.equals("date") || columnType.equals("datetime")) {
+			Date date = parseDate(columnMetadata, columnValue);
+			return date;
+		} 
+		
+		return columnValue;
+	}
+
+	private Date parseDate(Field columnMetadata, Object value) throws ParseException {
+		String format = columnMetadata.getFormat();
+		
+		if (StringUtils.isBlank(format)) {
+			if (columnMetadata.getType().equals("date")) {
+				format = ConfigUtil.getInstance().getDateFmt();
+			} else {
+				format = ConfigUtil.getInstance().getDateTimeFmt();
+			}
+		}
+		
+		SimpleDateFormat sdf = new SimpleDateFormat(format);
+		
+		return sdf.parse(value.toString());
+	}
+
+	private Object getColumnValue(Record record, Field columnMetadata) {
 		Object columnValue = null;
 		
 		if (columnMetadata.isMultiple()) {
-			columnValue = getMultiValueList(record,columnMetadata.getColumn(),1);
+			columnValue = getMultiValueList(record,columnMetadata.getColumn());
 		} else {
 			columnValue = record.getValue(columnMetadata.getColumn());
 		}
@@ -79,39 +100,19 @@ public class DefaultTransformer implements Transformer {
 		return columnValue;
 	}
 
-	private List<String> getMultiValueList(Record record, String columnName, int prefix) {
-		List<String> multiValueList = new ArrayList<>();
+	private List<String> getMultiValueList(Record record, String columnName) {
+		List<String> result = new ArrayList<>();
+		int instance = 1;
+		String value =null;
 		
-		while (true) {
-			if (StringUtils.isNotBlank((String)record.getValue(columnName+"#"+prefix))) {
-				multiValueList.add(record.getValue(columnName+"#"+prefix).toString());
-				prefix++;
-			} else {
-				break;
-			}
+		while ((value = (String)record.getValue(columnName + "#" + instance)) != null) {
+				result.add(record.getValue(columnName + "#" + instance).toString());
+				++instance;
 		}
 		
-		return multiValueList;
+		return result;
 	}
 
-	private Date parseToDate(Object value, String dateFmt) throws ParseException {
-		if (StringUtils.isBlank(dateFmt)) {
-			dateFmt = ConfigUtil.getInstance().getDateFmt();
-		} 
-		
-		SimpleDateFormat simpleDateFormat = new SimpleDateFormat(dateFmt);
-		Date date = simpleDateFormat.parse(value.toString());
-					
-		return date;
-	}
-	
-	private Date parseToDatetime(Object value, String dateFmt) throws ParseException {
-		if(StringUtils.isBlank(dateFmt)) {
-			dateFmt = ConfigUtil.getInstance().getDateTimeFmt();
-		}
-		
-		return parseToDate(value, dateFmt);
-	}
 }
 
 
