@@ -1,11 +1,15 @@
 package com.krishagni.integration.plugin.core;
 
+import java.io.FileInputStream;
+import java.io.InputStream;
+
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.krishagni.catissueplus.core.administrative.services.InstituteService;
-import com.krishagni.integration.plugin.core.Metadata.Field;
 import com.krishagni.integration.plugin.datasource.DataSource;
 import com.krishagni.integration.plugin.datasource.impl.CsvFileDataSource;
 import com.krishagni.integration.plugin.transformer.Transformer;
@@ -23,7 +27,6 @@ public class InstituteImporter {
 		try {
 			Metadata instituteMetadata = getMetadata();
 			Transformer transformer = new DefaultTransformer(instituteMetadata);
-			//InstituteDetail detail = null;
 			
 			ds = new CsvFileDataSource("/home/krishagni/Desktop/TestInstituteCsv.csv");
 		
@@ -31,10 +34,10 @@ public class InstituteImporter {
 				Record record = ds.nextRecord();
 				InstituteDetail detail = transformer.transform(record, InstituteDetail.class);
 				//instituteSvc.createInstitute(new RequestEvent<InstituteDetail>(detail));
-				logger.info(detail.getId());
-				logger.info(detail.getName());
-				logger.info(detail.getDate());
-				logger.info(detail.getCityNames());
+				logger.info("Id : "+detail.getId());
+				logger.info("Name : "+detail.getName());
+				logger.info("Date : "+detail.getDate());
+				logger.info("City Names : "+detail.getCityNames()+"\n");
 			}
 		} catch(Exception e) {
 			logger.error("Error while processing.");
@@ -46,36 +49,43 @@ public class InstituteImporter {
 		
 	}
 	
-	private Metadata getMetadata() {
-		Metadata metadata = new Metadata();
-		Field idMetadata = new Field();
-		idMetadata.setAttribute("id");
-		idMetadata.setColumn("Identifier");
-		idMetadata.setType("Long");
-		idMetadata.setMultiple(false);
-		metadata.addField(idMetadata);
+	private Metadata getMetadata() throws Exception{
+		ObjectMapper objMapper = new ObjectMapper();
 		
-		Field nameMetadata = new Field();
-		nameMetadata.setAttribute("name");
-		nameMetadata.setColumn("Institute Name");
-		nameMetadata.setType("String");
-		nameMetadata.setMultiple(false);
-		metadata.addField(nameMetadata);
+		InputStream is = new FileInputStream("/home/krishagni/Documents/Metadata.json");
+		String Json = IOUtils.toString(is);
 		
-		Field dateMetadata = new Field();
-		dateMetadata.setAttribute("date");
-		dateMetadata.setColumn("Date");
-		dateMetadata.setType("date");
-		dateMetadata.setFormat("dd/MM/yyyy");
-		dateMetadata.setMultiple(false);
-		metadata.addField(dateMetadata);
+		/*String Json = "{"
+				+ 	"\"fields\" : ["
+				+ 				"{"
+				+ 					"\"attribute\" : \"id\", "
+				+ 					"\"column\" : \"Identifier\", "
+				+ 					"\"type\" : \"Long\", "
+				+ 					"\"multiple\" : \"false\""
+				+ 				"},"
+				+  				"{"
+				+ 					"\"attribute\" : \"name\", "
+				+ 					"\"column\" : \"Institute Name\", "
+				+ 					"\"type\" : \"String\", "
+				+ 					"\"multiple\" : \"false\""
+				+ 				"},"
+				+				"{"
+				+ 					"\"attribute\" : \"date\", "
+				+ 					"\"column\" : \"Date\", "
+				+ 					"\"type\" : \"datetime\", "
+				+ 					"\"multiple\" : \"false\","
+				+					"\"format\" : \"dd/MM/yyyy HH:mm:ss\""
+				+ 				"},"
+				+				"{"
+				+ 					"\"attribute\" : \"cityNames\", "
+				+ 					"\"column\" : \"City\", "
+				+ 					"\"type\" : \"String\", "
+				+ 					"\"multiple\" : \"true\""
+				+ 				"}"
+				+ 		"]"
+				+ "}";*/
 		
-		Field cityMetadata = new Field();
-		cityMetadata.setAttribute("cityNames");
-		cityMetadata.setColumn("City");
-		cityMetadata.setType("String");
-		cityMetadata.setMultiple(true);
-		metadata.addField(cityMetadata);
+		Metadata metadata = objMapper.readValue(Json, Metadata.class);
 		
 		return metadata;
 	}
