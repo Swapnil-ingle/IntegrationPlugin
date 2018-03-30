@@ -25,8 +25,8 @@ public class InstituteImporter {
 		try {
 			Metadata instituteMetadata = getMetadata();
 			Transformer transformer = new DefaultTransformer(instituteMetadata);
-			
-			ds = DataSourceRegistrar.getDataSource(instituteMetadata.getDataSource());
+			DataSourceRegistrar dsRegistrar = new DataSourceRegistrar();
+			ds = dsRegistrar.getDataSource(instituteMetadata.getDataSource());
 			
 			while (ds.hasNext()) {
 				Record record = ds.nextRecord();
