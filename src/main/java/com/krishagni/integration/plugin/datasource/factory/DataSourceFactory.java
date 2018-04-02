@@ -6,4 +6,6 @@ import com.krishagni.integration.plugin.datasource.DataSource;
 
 public interface DataSourceFactory {
 	DataSource createDataSource(Map<String, String> opts);
+	
+	String getName();
 }

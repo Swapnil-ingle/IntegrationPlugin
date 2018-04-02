@@ -4,7 +4,7 @@ import java.sql.Time;
 import java.util.Date;
 import java.util.List;
 
-public class InstituteDetail {
+public class DummyInstituteDetail {
 
 	private Long id;
 

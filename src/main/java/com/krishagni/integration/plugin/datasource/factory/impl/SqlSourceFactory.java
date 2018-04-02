@@ -13,4 +13,9 @@ public class SqlSourceFactory implements DataSourceFactory{
 		return null;
 	}
 
+	@Override
+	public String getName() {
+		return "sqlResult";
+	}
+
 }

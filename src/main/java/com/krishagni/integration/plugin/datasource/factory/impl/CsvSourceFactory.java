@@ -18,5 +18,9 @@ public class CsvSourceFactory implements DataSourceFactory {
 		
 		return null;
 	}
+	
+	public String getName() {
+		return "csvFile";
+	}
 
 }

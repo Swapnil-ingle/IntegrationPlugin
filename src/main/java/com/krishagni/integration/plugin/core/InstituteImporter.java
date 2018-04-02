@@ -7,7 +7,9 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.krishagni.catissueplus.core.administrative.events.InstituteDetail;
 import com.krishagni.catissueplus.core.administrative.services.InstituteService;
+import com.krishagni.catissueplus.core.common.events.RequestEvent;
 import com.krishagni.integration.plugin.datasource.DataSource;
 import com.krishagni.integration.plugin.datasource.DataSourceRegistrar;
 import com.krishagni.integration.plugin.transformer.Transformer;
@@ -25,17 +27,16 @@ public class InstituteImporter {
 		try {
 			Metadata instituteMetadata = getMetadata();
 			Transformer transformer = new DefaultTransformer(instituteMetadata);
-			DataSourceRegistrar dsRegistrar = new DataSourceRegistrar();
-			ds = dsRegistrar.getDataSource(instituteMetadata.getDataSource());
+			ds = DataSourceRegistrar.getDataSource(instituteMetadata.getDataSource());
 			
 			while (ds.hasNext()) {
 				Record record = ds.nextRecord();
 				InstituteDetail detail = transformer.transform(record, InstituteDetail.class);
-				//instituteSvc.createInstitute(new RequestEvent<InstituteDetail>(detail));
+				instituteSvc.createInstitute(new RequestEvent<InstituteDetail>(detail));
 				logger.info("Id :" + detail.getId());
 				logger.info("Name : " + detail.getName());
-				logger.info("Date : " + detail.getDate());
-				logger.info("City Names : " + detail.getCityNames() + "\n");
+				//logger.info("Date : " + detail.getDate());
+				//logger.info("City Names : " + detail.getCityNames() + "\n");
 			}
 		} catch(Exception e) {
 			logger.error("Error while processing.");
