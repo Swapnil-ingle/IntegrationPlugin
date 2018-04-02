@@ -19,7 +19,7 @@ import com.krishagni.catissueplus.core.importer.domain.ImportJobErrorCode;
 import com.krishagni.integration.plugin.core.InstituteImporter;
 import com.krishagni.integration.plugin.core.Metadata;
 import com.krishagni.integration.plugin.core.Record;
-import com.krishagni.integration.plugin.core.Metadata.Field;
+import com.krishagni.integration.plugin.core.Metadata.ObjectSchema;
 import com.krishagni.integration.plugin.transformer.Transformer;
 
 
@@ -38,7 +38,7 @@ public class DefaultTransformer implements Transformer {
 		Map<String, Object> attrValueMap = new HashMap<>();
 		
 		try {
-			for (Field columnMetadata : metadata.getFields()) {
+			for (ObjectSchema.Field columnMetadata : metadata.getObjectSchema().getFields()) {
 				Object value = getValue(record, columnMetadata);
 				
 				if (value != null) {
@@ -56,7 +56,7 @@ public class DefaultTransformer implements Transformer {
 		return objMapper.convertValue(attrValueMap, objectType);
 	}
 
-	private Object getValue(Record record, Field columnMetadata) throws ParseException{
+	private Object getValue(Record record, ObjectSchema.Field columnMetadata) throws ParseException{
 		Object columnValue = getColumnValue(record, columnMetadata);
 		String columnType = columnMetadata.getType();
 		
@@ -72,7 +72,7 @@ public class DefaultTransformer implements Transformer {
 		return columnValue;
 	}
 
-	private Date parseDate(Field columnMetadata, Object value) throws ParseException {
+	private Date parseDate(ObjectSchema.Field columnMetadata, Object value) throws ParseException {
 		String format = columnMetadata.getFormat();
 		
 		if (StringUtils.isBlank(format)) {
@@ -88,7 +88,7 @@ public class DefaultTransformer implements Transformer {
 		return sdf.parse(value.toString());
 	}
 
-	private Object getColumnValue(Record record, Field columnMetadata) {
+	private Object getColumnValue(Record record, ObjectSchema.Field columnMetadata) {
 		Object columnValue = null;
 		
 		if (columnMetadata.isMultiple()) {

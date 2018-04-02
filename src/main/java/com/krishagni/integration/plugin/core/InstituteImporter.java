@@ -25,13 +25,15 @@ public class InstituteImporter {
 	
 	public void importObjects () {
 		try {
-			Metadata instituteMetadata = getMetadata();
-			Transformer transformer = new DefaultTransformer(instituteMetadata);
-			ds = DataSourceRegistrar.getDataSource(instituteMetadata.getDataSource());
+			Metadata metadata = getMetadata();
+			Transformer transformer = new DefaultTransformer(metadata);
+			ds = DataSourceRegistrar.getDataSource(metadata.getDataSource());
+			//Object detail = Class.forName(metadata.getObjectSchema().getType()).newInstance();
+			InstituteDetail detail = new InstituteDetail();
 			
 			while (ds.hasNext()) {
 				Record record = ds.nextRecord();
-				InstituteDetail detail = transformer.transform(record, InstituteDetail.class);
+				detail = transformer.transform(record, detail.getClass());
 				instituteSvc.createInstitute(new RequestEvent<InstituteDetail>(detail));
 				logger.info("Id :" + detail.getId());
 				logger.info("Name : " + detail.getName());
