@@ -7,15 +7,9 @@ import com.krishagni.integration.plugin.core.Record;
 import com.krishagni.integration.plugin.datasource.DataSource;
 
 public class SqlDataSource implements DataSource {
-	private JdbcTemplate jdbcTemplate;
-	
 	private SqlRowSet rowSet;
 	
-	private String query;
-	
 	public SqlDataSource(JdbcTemplate jdbcTemplate, String query) {
-		this.jdbcTemplate = jdbcTemplate;
-		this.query = query;
 		this.rowSet = jdbcTemplate.queryForRowSet(query);
 	}
 	
