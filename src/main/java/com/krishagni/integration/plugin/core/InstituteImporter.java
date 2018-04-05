@@ -8,7 +8,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.krishagni.catissueplus.core.administrative.events.InstituteDetail;
+import com.krishagni.catissueplus.core.administrative.events.SiteDetail;
 import com.krishagni.catissueplus.core.administrative.services.InstituteService;
+import com.krishagni.catissueplus.core.administrative.services.SiteService;
+import com.krishagni.catissueplus.core.administrative.services.impl.SiteServiceImpl;
 import com.krishagni.catissueplus.core.common.events.RequestEvent;
 import com.krishagni.integration.plugin.datasource.DataSource;
 import com.krishagni.integration.plugin.datasource.DataSourceRegistrar;
@@ -28,17 +31,12 @@ public class InstituteImporter {
 			Metadata metadata = getMetadata();
 			Transformer transformer = new DefaultTransformer(metadata);
 			ds = DataSourceRegistrar.getDataSource(metadata.getDataSource());
-			//Object detail = Class.forName(metadata.getObjectSchema().getType()).newInstance();
-			InstituteDetail detail = new InstituteDetail();
+			Object detail = Class.forName(metadata.getObjectSchema().getType()).newInstance();
 			
 			while (ds.hasNext()) {
 				Record record = ds.nextRecord();
 				detail = transformer.transform(record, detail.getClass());
-				instituteSvc.createInstitute(new RequestEvent<InstituteDetail>(detail));
-				logger.info("Id :" + detail.getId());
-				logger.info("Name : " + detail.getName());
-				//logger.info("Date : " + detail.getDate());
-				//logger.info("City Names : " + detail.getCityNames() + "\n");
+				instituteSvc.createInstitute(new RequestEvent<InstituteDetail>((InstituteDetail) detail));
 			}
 		} catch(Exception e) {
 			logger.error("Error while processing.");
@@ -47,7 +45,6 @@ public class InstituteImporter {
 				ds.close();
 			}
 		}
-		
 	}
 	
 	private Metadata getMetadata() throws Exception{

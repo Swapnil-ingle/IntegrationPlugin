@@ -22,7 +22,6 @@ import com.krishagni.integration.plugin.core.Record;
 import com.krishagni.integration.plugin.core.Metadata.ObjectSchema;
 import com.krishagni.integration.plugin.transformer.Transformer;
 
-
 public class DefaultTransformer implements Transformer {
 	private final static Log logger = LogFactory.getLog(InstituteImporter.class);
 	
