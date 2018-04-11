@@ -31,12 +31,12 @@ public class InstituteImporter {
 			Metadata metadata = getMetadata();
 			Transformer transformer = new DefaultTransformer(metadata);
 			ds = DataSourceRegistrar.getDataSource(metadata.getDataSource());
-			Object detail = Class.forName(metadata.getObjectSchema().getType()).newInstance();
+			InstituteDetail detail;
 			
 			while (ds.hasNext()) {
 				Record record = ds.nextRecord();
-				detail = transformer.transform(record, detail.getClass());
-				instituteSvc.createInstitute(new RequestEvent<InstituteDetail>((InstituteDetail) detail));
+				detail = transformer.transform(record, InstituteDetail.class);
+				instituteSvc.createInstitute(new RequestEvent<InstituteDetail>(detail));
 			}
 		} catch(Exception e) {
 			logger.error("Error while processing.");
@@ -50,7 +50,7 @@ public class InstituteImporter {
 	private Metadata getMetadata() throws Exception{
 		ObjectMapper objMapper = new ObjectMapper();
 		
-		File Json = new File("/home/krishagni/Documents/Metadata.json");
+		File Json = new File("/Users/swapnil/Integrationplugin/Resources/Metadata.json");
 		
 		return objMapper.readValue(Json, Metadata.class);
 	}

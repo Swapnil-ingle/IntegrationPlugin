@@ -17,7 +17,7 @@ public class SqlSourceFactory implements DataSourceFactory{
 				opts.get("password"), true);
 		JdbcTemplate jdbcTemplate = new JdbcTemplate(scds);
 		
-		return new SqlDataSource(jdbcTemplate, opts.get("query"));
+		return new SqlDataSource(scds, jdbcTemplate, opts.get("query"));
 	}
 
 	@Override
