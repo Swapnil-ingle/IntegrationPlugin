@@ -2,7 +2,6 @@ package com.krishagni.integration.plugin.datasource.factory.impl;
 
 import java.util.Map;
 
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 
 import com.krishagni.integration.plugin.datasource.DataSource;
@@ -15,9 +14,8 @@ public class SqlSourceFactory implements DataSourceFactory{
 	public DataSource createDataSource(Map<String, String> opts) {
 		SingleConnectionDataSource scds = new SingleConnectionDataSource(opts.get("url"), opts.get("username"), 
 				opts.get("password"), true);
-		JdbcTemplate jdbcTemplate = new JdbcTemplate(scds);
 		
-		return new SqlDataSource(scds, jdbcTemplate, opts.get("query"));
+		return new SqlDataSource(scds, opts.get("query"));
 	}
 
 	@Override

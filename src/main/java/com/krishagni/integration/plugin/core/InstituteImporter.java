@@ -8,10 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.krishagni.catissueplus.core.administrative.events.InstituteDetail;
-import com.krishagni.catissueplus.core.administrative.events.SiteDetail;
 import com.krishagni.catissueplus.core.administrative.services.InstituteService;
-import com.krishagni.catissueplus.core.administrative.services.SiteService;
-import com.krishagni.catissueplus.core.administrative.services.impl.SiteServiceImpl;
 import com.krishagni.catissueplus.core.common.events.RequestEvent;
 import com.krishagni.integration.plugin.datasource.DataSource;
 import com.krishagni.integration.plugin.datasource.DataSourceRegistrar;
@@ -39,7 +36,7 @@ public class InstituteImporter {
 				instituteSvc.createInstitute(new RequestEvent<InstituteDetail>(detail));
 			}
 		} catch(Exception e) {
-			logger.error("Error while processing.");
+			logger.error("Error while processing: " + e.getMessage());
 		} finally {
 			if (ds != null) {
 				ds.close();
